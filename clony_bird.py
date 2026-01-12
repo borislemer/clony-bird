@@ -185,6 +185,147 @@ class ClonyBird:
         
         return False
     
+    def draw_welcome_screen(self):
+        """Draw the welcome/start screen"""
+        center_y = self.height // 2
+        center_x = self.width // 2
+        
+        # ASCII art for "CLONY BIRD"
+        title_lines = [
+            "  ____ _                    ____  _     _ _",
+            " / ___| | ___  _ __   ___  | __ )(_) __| | |",
+            "| |   | |/ _ \\| '_ \\ / _ \\ |  _ \\| |/ _` | |",
+            "| |___| | (_) | | | |  __/ | |_) | | (_| |_|",
+            " \\____|_|\\___/|_| |_|\\___| |____/|_|\\__,_(_)",
+        ]
+        
+        # Welcome text
+        welcome_text = "WELCOME!"
+        
+        # Instructions
+        instructions = [
+            "Press SPACE or W to start and jump",
+            "",
+            "Navigate through pipes and advance through 5 levels!",
+            "Each level requires 30 points to complete.",
+            "Speed increases with each level.",
+            "",
+            "Controls:",
+            "  SPACE / W  - Jump",
+            "  R          - Restart (after game over)",
+            "  Q / ESC    - Quit",
+        ]
+        
+        # Draw title
+        start_y = max(2, center_y - 8)
+        for i, line in enumerate(title_lines):
+            if start_y + i < self.height - 1:
+                x = center_x - len(line) // 2
+                if x >= 0 and x + len(line) < self.width:
+                    try:
+                        if self.colors_enabled:
+                            self.stdscr.addstr(start_y + i, x, line, curses.color_pair(1) | curses.A_BOLD)
+                        else:
+                            self.stdscr.addstr(start_y + i, x, line, curses.A_BOLD)
+                    except:
+                        pass
+        
+        # Draw welcome text
+        welcome_y = start_y + len(title_lines) + 1
+        welcome_x = center_x - len(welcome_text) // 2
+        if welcome_y < self.height - 1 and welcome_x >= 0:
+            try:
+                if self.colors_enabled:
+                    self.stdscr.addstr(welcome_y, welcome_x, welcome_text, curses.color_pair(5) | curses.A_BOLD | curses.A_BLINK)
+                else:
+                    self.stdscr.addstr(welcome_y, welcome_x, welcome_text, curses.A_BOLD | curses.A_BLINK)
+            except:
+                pass
+        
+        # Draw instructions
+        inst_start_y = welcome_y + 3
+        for i, line in enumerate(instructions):
+            if inst_start_y + i < self.height - 2:
+                x = center_x - len(line) // 2
+                if x >= 0 and x + len(line) < self.width:
+                    try:
+                        if self.colors_enabled:
+                            self.stdscr.addstr(inst_start_y + i, x, line, curses.color_pair(4))
+                        else:
+                            self.stdscr.addstr(inst_start_y + i, x, line)
+                    except:
+                        pass
+    
+    def draw_game_over_screen(self):
+        """Draw the game over screen"""
+        center_y = self.height // 2
+        center_x = self.width // 2
+        
+        # ASCII art for "GAME OVER"
+        game_over_lines = [
+            "   ____                        ___",
+            "  / ___| __ _ _ __ ___   ___  / _ \\__   _____ _ __",
+            " | |  _ / _` | '_ ` _ \\ / _ \\| | | \\ \\ / / _ \\ '__|",
+            " | |_| | (_| | | | | | |  __/| |_| |\\ V /  __/ |",
+            "  \\____|\\__,_|_| |_| |_|\\___|  \\___/  \\_/ \\___|_|",
+        ]
+        
+        # Stats
+        stats = [
+            f"Level Reached: {self.level}",
+            f"Total Score: {self.total_score}",
+            f"Level Score: {self.level_score}/{self.points_per_level}",
+        ]
+        
+        # Instructions
+        instructions = [
+            "",
+            "Press R to restart",
+            "Press Q to quit",
+        ]
+        
+        # Draw game over title
+        start_y = max(2, center_y - 6)
+        for i, line in enumerate(game_over_lines):
+            if start_y + i < self.height - 1:
+                x = center_x - len(line) // 2
+                if x >= 0 and x + len(line) < self.width:
+                    try:
+                        if self.colors_enabled:
+                            self.stdscr.addstr(start_y + i, x, line, curses.color_pair(5) | curses.A_BOLD)
+                        else:
+                            self.stdscr.addstr(start_y + i, x, line, curses.A_BOLD)
+                    except:
+                        pass
+        
+        # Draw stats
+        stats_start_y = start_y + len(game_over_lines) + 2
+        for i, stat in enumerate(stats):
+            if stats_start_y + i < self.height - 1:
+                x = center_x - len(stat) // 2
+                if x >= 0 and x + len(stat) < self.width:
+                    try:
+                        if self.colors_enabled:
+                            self.stdscr.addstr(stats_start_y + i, x, stat, curses.color_pair(4) | curses.A_BOLD)
+                        else:
+                            self.stdscr.addstr(stats_start_y + i, x, stat, curses.A_BOLD)
+                    except:
+                        pass
+        
+        # Draw instructions
+        inst_start_y = stats_start_y + len(stats) + 1
+        for i, line in enumerate(instructions):
+            if inst_start_y + i < self.height - 1:
+                x = center_x - len(line) // 2
+                if x >= 0 and x + len(line) < self.width:
+                    try:
+                        if self.colors_enabled:
+                            self.stdscr.addstr(inst_start_y + i, x, line, curses.color_pair(4))
+                        else:
+                            self.stdscr.addstr(inst_start_y + i, x, line)
+                    except:
+                        pass
+    
     def draw(self):
         """Draw everything on screen"""
         self.stdscr.clear()
@@ -209,68 +350,70 @@ class ClonyBird:
             except:
                 pass
         
-        # Draw pipes
-        for pipe in self.pipes:
-            pipe_x = int(pipe['x'])
-            gap_y = int(pipe['gap_y'])
-            gap_top = gap_y - PIPE_GAP // 2
-            gap_bottom = gap_y + PIPE_GAP // 2
-            
-            # Only draw if pipe is visible
-            if -PIPE_WIDTH <= pipe_x < self.width:
-                # Top pipe
-                for y in range(1, gap_top):
-                    for x_offset in range(PIPE_WIDTH):
-                        x = pipe_x + x_offset
-                        if 0 <= x < self.width and 0 <= y < self.height - 1:
-                            try:
-                                if self.colors_enabled:
-                                    self.stdscr.addstr(y, x, PIPE_CHAR, curses.color_pair(2))
-                                else:
-                                    self.stdscr.addstr(y, x, PIPE_CHAR)
-                            except:
-                                pass
+        # Only draw game elements if game is started and not over
+        if self.game_started and not self.game_over:
+            # Draw pipes
+            for pipe in self.pipes:
+                pipe_x = int(pipe['x'])
+                gap_y = int(pipe['gap_y'])
+                gap_top = gap_y - PIPE_GAP // 2
+                gap_bottom = gap_y + PIPE_GAP // 2
                 
-                # Bottom pipe
-                for y in range(gap_bottom + 1, self.height - 1):
-                    for x_offset in range(PIPE_WIDTH):
-                        x = pipe_x + x_offset
-                        if 0 <= x < self.width and 0 <= y < self.height - 1:
-                            try:
-                                if self.colors_enabled:
-                                    self.stdscr.addstr(y, x, PIPE_CHAR, curses.color_pair(2))
-                                else:
-                                    self.stdscr.addstr(y, x, PIPE_CHAR)
-                            except:
-                                pass
-        
-        # Draw bird
-        bird_x = int(self.bird_x)
-        bird_y = int(self.bird_y)
-        if 0 <= bird_x < self.width and 0 <= bird_y < self.height - 1:
+                # Only draw if pipe is visible
+                if -PIPE_WIDTH <= pipe_x < self.width:
+                    # Top pipe
+                    for y in range(1, gap_top):
+                        for x_offset in range(PIPE_WIDTH):
+                            x = pipe_x + x_offset
+                            if 0 <= x < self.width and 0 <= y < self.height - 1:
+                                try:
+                                    if self.colors_enabled:
+                                        self.stdscr.addstr(y, x, PIPE_CHAR, curses.color_pair(2))
+                                    else:
+                                        self.stdscr.addstr(y, x, PIPE_CHAR)
+                                except:
+                                    pass
+                    
+                    # Bottom pipe
+                    for y in range(gap_bottom + 1, self.height - 1):
+                        for x_offset in range(PIPE_WIDTH):
+                            x = pipe_x + x_offset
+                            if 0 <= x < self.width and 0 <= y < self.height - 1:
+                                try:
+                                    if self.colors_enabled:
+                                        self.stdscr.addstr(y, x, PIPE_CHAR, curses.color_pair(2))
+                                    else:
+                                        self.stdscr.addstr(y, x, PIPE_CHAR)
+                                except:
+                                    pass
+            
+            # Draw bird
+            bird_x = int(self.bird_x)
+            bird_y = int(self.bird_y)
+            if 0 <= bird_x < self.width and 0 <= bird_y < self.height - 1:
+                try:
+                    if self.colors_enabled:
+                        self.stdscr.addstr(bird_y, bird_x, self.bird_char, curses.color_pair(1))
+                    else:
+                        self.stdscr.addstr(bird_y, bird_x, self.bird_char)
+                except:
+                    pass
+            
+            # Draw score and level info (only during gameplay)
+            level_text = f"Level: {self.level}/{self.max_level}"
+            score_text = f"Level Score: {self.level_score}/{self.points_per_level} | Total: {self.total_score}"
             try:
                 if self.colors_enabled:
-                    self.stdscr.addstr(bird_y, bird_x, self.bird_char, curses.color_pair(1))
+                    self.stdscr.addstr(0, 2, level_text, curses.color_pair(4) | curses.A_BOLD)
+                    self.stdscr.addstr(1, 2, score_text, curses.color_pair(4))
                 else:
-                    self.stdscr.addstr(bird_y, bird_x, self.bird_char)
+                    self.stdscr.addstr(0, 2, level_text, curses.A_BOLD)
+                    self.stdscr.addstr(1, 2, score_text)
             except:
                 pass
         
-        # Draw score and level info
-        level_text = f"Level: {self.level}/{self.max_level}"
-        score_text = f"Level Score: {self.level_score}/{self.points_per_level} | Total: {self.total_score}"
-        try:
-            if self.colors_enabled:
-                self.stdscr.addstr(0, 2, level_text, curses.color_pair(4) | curses.A_BOLD)
-                self.stdscr.addstr(1, 2, score_text, curses.color_pair(4))
-            else:
-                self.stdscr.addstr(0, 2, level_text, curses.A_BOLD)
-                self.stdscr.addstr(1, 2, score_text)
-        except:
-            pass
-        
-        # Draw level up message
-        if self.level_up_message_time > 0:
+        # Draw level up message (only during active gameplay)
+        if self.game_started and not self.game_over and self.level_up_message_time > 0:
             msg = f"LEVEL {self.level}!"
             msg_x = (self.width - len(msg)) // 2
             msg_y = self.height // 2
@@ -283,38 +426,11 @@ class ClonyBird:
                 pass
             self.level_up_message_time -= 1
         
-        # Draw messages
+        # Draw welcome screen or game over screen
         if not self.game_started:
-            msg = "Press SPACE to start/jump"
-            msg_x = (self.width - len(msg)) // 2
-            msg_y = self.height // 2
-            try:
-                if self.colors_enabled:
-                    self.stdscr.addstr(msg_y, msg_x, msg, curses.color_pair(4))
-                else:
-                    self.stdscr.addstr(msg_y, msg_x, msg)
-            except:
-                pass
-        
-        if self.game_over:
-            msg1 = "GAME OVER!"
-            msg2 = f"Reached Level: {self.level} | Total Score: {self.total_score}"
-            msg3 = "Press R to restart, Q to quit"
-            msg1_x = (self.width - len(msg1)) // 2
-            msg2_x = (self.width - len(msg2)) // 2
-            msg3_x = (self.width - len(msg3)) // 2
-            msg_y = self.height // 2 - 1
-            try:
-                if self.colors_enabled:
-                    self.stdscr.addstr(msg_y, msg1_x, msg1, curses.color_pair(5) | curses.A_BOLD)
-                    self.stdscr.addstr(msg_y + 1, msg2_x, msg2, curses.color_pair(4))
-                    self.stdscr.addstr(msg_y + 2, msg3_x, msg3, curses.color_pair(4))
-                else:
-                    self.stdscr.addstr(msg_y, msg1_x, msg1, curses.A_BOLD)
-                    self.stdscr.addstr(msg_y + 1, msg2_x, msg2)
-                    self.stdscr.addstr(msg_y + 2, msg3_x, msg3)
-            except:
-                pass
+            self.draw_welcome_screen()
+        elif self.game_over:
+            self.draw_game_over_screen()
         
         self.stdscr.refresh()
     
