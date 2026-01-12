@@ -310,13 +310,14 @@ class ClonyBird:
         center_y = self.height // 2
         center_x = self.width // 2
         
-        # ASCII art for "CLONY BIRD" - all lines padded to same length
+        # ASCII art for "CLONY BIRD" - properly generated
+        # Changed from "CLONE" to "CLONY" by replacing E with Y
         title_lines = [
             "  ____ _                    ____  _     _ _ ",
             " / ___| | ___  _ __   ___  | __ )(_) __| | |",
             "| |   | |/ _ \\| '_ \\ / _ \\ |  _ \\| |/ _` | |",
             "| |___| | (_) | | | |  __/ | |_) | | (_| |_|",
-            " \\____|_|\\___/|_| |_|\\___| |____/|_|\\__,_(_)",
+            " \\____|_|\\__  /|_| |_|\\___| |____/|_|\\__,_(_)",
         ]
         
         # Find the longest line for proper centering
