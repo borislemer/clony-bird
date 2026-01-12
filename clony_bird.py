@@ -64,14 +64,22 @@ class ClonyBird:
         # Try to enable colors
         try:
             curses.start_color()
-            curses.init_pair(1, curses.COLOR_YELLOW, curses.COLOR_BLACK)  # Bird
-            curses.init_pair(2, curses.COLOR_GREEN, curses.COLOR_BLACK)  # Pipes
-            curses.init_pair(3, curses.COLOR_CYAN, curses.COLOR_BLACK)   # Sky
-            curses.init_pair(4, curses.COLOR_WHITE, curses.COLOR_BLACK)  # Text
-            curses.init_pair(5, curses.COLOR_RED, curses.COLOR_BLACK)    # Game Over
+            curses.use_default_colors()  # Better performance
+            curses.init_pair(1, curses.COLOR_YELLOW, -1)  # Bird (transparent bg)
+            curses.init_pair(2, curses.COLOR_GREEN, -1)   # Pipes (transparent bg)
+            curses.init_pair(3, curses.COLOR_CYAN, -1)    # Sky (transparent bg)
+            curses.init_pair(4, curses.COLOR_WHITE, -1)   # Text (transparent bg)
+            curses.init_pair(5, curses.COLOR_RED, -1)     # Game Over (transparent bg)
             self.colors_enabled = True
         except:
             self.colors_enabled = False
+        
+        # Set background color for better performance
+        try:
+            if self.colors_enabled:
+                self.stdscr.bkgd(' ', curses.color_pair(3))
+        except:
+            pass
         
         # Check if terminal supports emoji and set default bird
         try:
@@ -441,32 +449,27 @@ class ClonyBird:
                         pass
     
     def draw(self):
-        """Draw everything on screen"""
-        self.stdscr.clear()
+        """Draw everything on screen - optimized to reduce flickering"""
+        # Use erase() instead of clear() for better performance
+        self.stdscr.erase()
         
-        # Draw sky background (optional, just for visual)
-        if self.colors_enabled:
-            for y in range(self.height - 1):
-                for x in range(self.width):
-                    try:
-                        self.stdscr.addstr(y, x, " ", curses.color_pair(3))
-                    except:
-                        pass
-        
-        # Draw ground
+        # Draw ground (only one line, efficient)
         ground_y = self.height - 1
-        for x in range(self.width):
-            try:
-                if self.colors_enabled:
-                    self.stdscr.addstr(ground_y, x, GROUND_CHAR, curses.color_pair(2))
-                else:
-                    self.stdscr.addstr(ground_y, x, GROUND_CHAR)
-            except:
-                pass
+        ground_line = GROUND_CHAR * self.width
+        try:
+            if self.colors_enabled:
+                self.stdscr.addstr(ground_y, 0, ground_line[:self.width], curses.color_pair(2))
+            else:
+                self.stdscr.addstr(ground_y, 0, ground_line[:self.width])
+        except:
+            pass
         
         # Only draw game elements if bird is selected, game is started and not over
         if self.bird_selected and self.game_started and not self.game_over:
-            # Draw pipes
+            # Draw pipes (optimized - draw by lines instead of pixels)
+            pipe_line = PIPE_CHAR * PIPE_WIDTH
+            pipe_attr = curses.color_pair(2) if self.colors_enabled else 0
+            
             for pipe in self.pipes:
                 pipe_x = int(pipe['x'])
                 gap_y = int(pipe['gap_y'])
@@ -475,29 +478,34 @@ class ClonyBird:
                 
                 # Only draw if pipe is visible
                 if -PIPE_WIDTH <= pipe_x < self.width:
-                    # Top pipe
-                    for y in range(1, gap_top):
-                        for x_offset in range(PIPE_WIDTH):
-                            x = pipe_x + x_offset
-                            if 0 <= x < self.width and 0 <= y < self.height - 1:
+                    # Calculate visible area
+                    start_x = max(0, pipe_x)
+                    end_x = min(self.width, pipe_x + PIPE_WIDTH)
+                    visible_width = end_x - start_x
+                    offset = start_x - pipe_x
+                    
+                    if visible_width > 0:
+                        visible_pipe = pipe_line[offset:offset + visible_width]
+                        
+                        # Top pipe - draw line by line
+                        for y in range(1, gap_top):
+                            if 0 <= y < self.height - 1:
                                 try:
                                     if self.colors_enabled:
-                                        self.stdscr.addstr(y, x, PIPE_CHAR, curses.color_pair(2))
+                                        self.stdscr.addstr(y, start_x, visible_pipe, pipe_attr)
                                     else:
-                                        self.stdscr.addstr(y, x, PIPE_CHAR)
+                                        self.stdscr.addstr(y, start_x, visible_pipe)
                                 except:
                                     pass
-                    
-                    # Bottom pipe
-                    for y in range(gap_bottom + 1, self.height - 1):
-                        for x_offset in range(PIPE_WIDTH):
-                            x = pipe_x + x_offset
-                            if 0 <= x < self.width and 0 <= y < self.height - 1:
+                        
+                        # Bottom pipe - draw line by line
+                        for y in range(gap_bottom + 1, self.height - 1):
+                            if 0 <= y < self.height - 1:
                                 try:
                                     if self.colors_enabled:
-                                        self.stdscr.addstr(y, x, PIPE_CHAR, curses.color_pair(2))
+                                        self.stdscr.addstr(y, start_x, visible_pipe, pipe_attr)
                                     else:
-                                        self.stdscr.addstr(y, x, PIPE_CHAR)
+                                        self.stdscr.addstr(y, start_x, visible_pipe)
                                 except:
                                     pass
             
@@ -548,7 +556,9 @@ class ClonyBird:
         elif self.game_over:
             self.draw_game_over_screen()
         
-        self.stdscr.refresh()
+        # Use noutrefresh + doupdate for better performance (reduces flickering)
+        self.stdscr.noutrefresh()
+        curses.doupdate()
     
     def end_game(self):
         """End the game"""
@@ -616,7 +626,7 @@ class ClonyBird:
         return True
     
     def run(self):
-        """Main game loop"""
+        """Main game loop - optimized for smooth rendering"""
         while True:
             if not self.handle_input():
                 break
@@ -628,7 +638,8 @@ class ClonyBird:
             
             self.draw()
             
-            time.sleep(0.05)  # Control game speed
+            # Reduced sleep time for smoother gameplay (less flickering)
+            time.sleep(0.03)  # 30ms for ~33 FPS
 
 def main(stdscr):
     """Main function wrapper for curses"""
