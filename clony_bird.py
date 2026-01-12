@@ -310,14 +310,17 @@ class ClonyBird:
         center_y = self.height // 2
         center_x = self.width // 2
         
-        # ASCII art for "CLONY BIRD"
+        # ASCII art for "CLONY BIRD" - all lines padded to same length
         title_lines = [
-            "  ____ _                    ____  _     _ _",
+            "  ____ _                    ____  _     _ _ ",
             " / ___| | ___  _ __   ___  | __ )(_) __| | |",
             "| |   | |/ _ \\| '_ \\ / _ \\ |  _ \\| |/ _` | |",
             "| |___| | (_) | | | |  __/ | |_) | | (_| |_|",
             " \\____|_|\\___/|_| |_|\\___| |____/|_|\\__,_(_)",
         ]
+        
+        # Find the longest line for proper centering
+        max_line_length = max(len(line) for line in title_lines)
         
         # Welcome text
         welcome_text = "WELCOME!"
@@ -336,11 +339,12 @@ class ClonyBird:
             "  Q / ESC    - Quit",
         ]
         
-        # Draw title
+        # Draw title - center based on longest line
         start_y = max(2, center_y - 8)
         for i, line in enumerate(title_lines):
             if start_y + i < self.height - 1:
-                x = center_x - len(line) // 2
+                # Center based on max line length, then adjust for actual line
+                x = center_x - max_line_length // 2
                 if x >= 0 and x + len(line) < self.width:
                     try:
                         if self.colors_enabled:
@@ -381,7 +385,7 @@ class ClonyBird:
         center_y = self.height // 2
         center_x = self.width // 2
         
-        # ASCII art for "GAME OVER"
+        # ASCII art for "GAME OVER" - find max length for alignment
         game_over_lines = [
             "   ____                        ___",
             "  / ___| __ _ _ __ ___   ___  / _ \\__   _____ _ __",
@@ -389,6 +393,9 @@ class ClonyBird:
             " | |_| | (_| | | | | | |  __/| |_| |\\ V /  __/ |",
             "  \\____|\\__,_|_| |_| |_|\\___|  \\___/  \\_/ \\___|_|",
         ]
+        
+        # Find the longest line for proper centering
+        max_line_length = max(len(line) for line in game_over_lines)
         
         # Stats
         selected_bird = self.bird_options[self.selected_bird_index]
@@ -406,11 +413,12 @@ class ClonyBird:
             "Press Q to quit",
         ]
         
-        # Draw game over title
+        # Draw game over title - center based on longest line
         start_y = max(2, center_y - 6)
         for i, line in enumerate(game_over_lines):
             if start_y + i < self.height - 1:
-                x = center_x - len(line) // 2
+                # Center based on max line length
+                x = center_x - max_line_length // 2
                 if x >= 0 and x + len(line) < self.width:
                     try:
                         if self.colors_enabled:
@@ -606,10 +614,12 @@ class ClonyBird:
                 elif key == ord(' ') or key == ord('\n') or key == ord('\r'):  # SPACE or ENTER
                     # Confirm selection
                     self.select_bird(self.selected_bird_index)
-                elif key == ord('q') or key == ord('Q') or key == 27:  # ESC to quit
-                    return False
+            # Quit functionality (works at any time)
+            if key == ord('q') or key == ord('Q') or key == 27:  # ESC or Q
+                return False
+            
             # Game controls (only after bird is selected)
-            elif key == ord(' ') or key == ord('w') or key == ord('W'):
+            if key == ord(' ') or key == ord('w') or key == ord('W'):
                 if not self.game_started:
                     self.start_game()
                 else:
@@ -617,9 +627,6 @@ class ClonyBird:
             elif key == ord('r') or key == ord('R'):
                 if self.game_over:
                     self.restart()
-            elif key == ord('q') or key == ord('Q') or key == 27:  # ESC
-                if self.game_over:
-                    return False
         except:
             pass
         
