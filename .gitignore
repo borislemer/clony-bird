@@ -1,0 +1,29 @@
+# PyInstaller build artifacts
+build/
+*.spec.bak
+
+# Dist folder (but allow the final binary)
+dist/*
+!dist/clony_bird
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+

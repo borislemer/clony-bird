@@ -1,0 +1,6 @@
+# Requirements for building Flappy Bird executable
+# Note: The game itself only uses Python standard library (curses, random, time, sys)
+# PyInstaller is only needed for creating the standalone executable
+
+pyinstaller>=5.0
+
