@@ -42,8 +42,7 @@ class ClonyBird:
         self.game_started = False
         self.level_up_message_time = 0  # Track when to hide level up message
         
-        # Bird selection
-        self.bird_selected = False
+        # Bird selection (now integrated into welcome screen)
         self.selected_bird_index = 0  # 0 = Easy, 1 = Medium, 2 = Hard
         self.difficulty_multiplier = 1.0  # Base speed multiplier
         self.bird_options = [
@@ -51,6 +50,8 @@ class ClonyBird:
             {"char": "🛩️", "name": "Medium", "difficulty": 1.1, "desc": "10% faster"},
             {"char": "🚁", "name": "Hard", "difficulty": 1.2, "desc": "20% faster"},
         ]
+        # Initialize with default bird
+        self.select_bird(0)
         
         # Bird position (relative to center)
         self.bird_x = self.width // 4
@@ -130,7 +131,6 @@ class ClonyBird:
             self.selected_bird_index = index
             self.bird_char = self.bird_options[index]["char"]
             self.difficulty_multiplier = self.bird_options[index]["difficulty"]
-            self.bird_selected = True
     
     def start_game(self):
         """Start the game"""
@@ -219,92 +219,6 @@ class ClonyBird:
         
         return False
     
-    def draw_bird_selection_screen(self):
-        """Draw the bird selection screen"""
-        center_y = self.height // 2
-        center_x = self.width // 2
-        
-        # Title
-        title = "SELECT YOUR BIRD"
-        title_x = center_x - len(title) // 2
-        
-        # Instructions
-        instructions = [
-            "Use LEFT/RIGHT arrows or 1/2/3 to select",
-            "Press SPACE or ENTER to confirm",
-        ]
-        
-        # Draw title
-        try:
-            if self.colors_enabled:
-                self.stdscr.addstr(2, title_x, title, curses.color_pair(1) | curses.A_BOLD)
-            else:
-                self.stdscr.addstr(2, title_x, title, curses.A_BOLD)
-        except:
-            pass
-        
-        # Draw bird options
-        start_y = center_y - 2
-        spacing = max(15, self.width // 4)
-        
-        for i, bird in enumerate(self.bird_options):
-            x = center_x - (spacing * len(self.bird_options)) // 2 + i * spacing + spacing // 2
-            
-            # Highlight selected bird
-            is_selected = (i == self.selected_bird_index)
-            attr = curses.A_BOLD if is_selected else curses.A_NORMAL
-            color = curses.color_pair(1) if is_selected else curses.color_pair(4)
-            
-            # Draw selection indicator
-            if is_selected:
-                try:
-                    indicator = ">>>"
-                    self.stdscr.addstr(start_y - 1, x - len(indicator) // 2, indicator, color | attr)
-                except:
-                    pass
-            
-            # Draw bird character
-            try:
-                if self.colors_enabled:
-                    self.stdscr.addstr(start_y, x - 1, bird["char"], color | attr)
-                else:
-                    self.stdscr.addstr(start_y, x - 1, bird["char"], attr)
-            except:
-                pass
-            
-            # Draw bird name
-            name_x = x - len(bird["name"]) // 2
-            try:
-                if self.colors_enabled:
-                    self.stdscr.addstr(start_y + 1, name_x, bird["name"], color | attr)
-                else:
-                    self.stdscr.addstr(start_y + 1, name_x, bird["name"], attr)
-            except:
-                pass
-            
-            # Draw difficulty description
-            desc_x = x - len(bird["desc"]) // 2
-            try:
-                if self.colors_enabled:
-                    self.stdscr.addstr(start_y + 2, desc_x, bird["desc"], curses.color_pair(4))
-                else:
-                    self.stdscr.addstr(start_y + 2, desc_x, bird["desc"])
-            except:
-                pass
-        
-        # Draw instructions
-        inst_y = start_y + 5
-        for i, line in enumerate(instructions):
-            if inst_y + i < self.height - 1:
-                x = center_x - len(line) // 2
-                try:
-                    if self.colors_enabled:
-                        self.stdscr.addstr(inst_y + i, x, line, curses.color_pair(4))
-                    else:
-                        self.stdscr.addstr(inst_y + i, x, line)
-                except:
-                    pass
-    
     def draw_welcome_screen(self):
         """Draw the welcome/start screen"""
         center_y = self.height // 2
@@ -332,13 +246,19 @@ class ClonyBird:
         # Welcome text
         welcome_text = "WELCOME!"
         
+        # Difficulty selector section
+        difficulty_title = "SELECT DIFFICULTY:"
+        
         # Instructions
         instructions = [
-            "Press SPACE or W to start and jump",
             "",
-            "Navigate through pipes and advance through 5 levels!",
-            "Each level requires 30 points to complete.",
-            "Speed increases with each level.",
+            "Use LEFT/RIGHT arrows, A/D, or 1/2/3 to select difficulty",
+            "Press SPACE or W to start the game",
+            "",
+            "Game Info:",
+            "  • Navigate through pipes and advance through 5 levels",
+            "  • Each level requires 30 points to complete",
+            "  • Speed increases with each level",
             "",
             "Controls:",
             "  SPACE / W  - Jump",
@@ -376,8 +296,68 @@ class ClonyBird:
             except:
                 pass
         
+        # Draw difficulty selector
+        diff_y = welcome_y + 2
+        diff_title_x = center_x - len(difficulty_title) // 2
+        try:
+            if self.colors_enabled:
+                self.stdscr.addstr(diff_y, diff_title_x, difficulty_title, curses.color_pair(4) | curses.A_BOLD)
+            else:
+                self.stdscr.addstr(diff_y, diff_title_x, difficulty_title, curses.A_BOLD)
+        except:
+            pass
+        
+        # Draw bird options
+        bird_start_y = diff_y + 2
+        spacing = max(18, self.width // 4)
+        
+        for i, bird in enumerate(self.bird_options):
+            x = center_x - (spacing * len(self.bird_options)) // 2 + i * spacing + spacing // 2
+            
+            # Highlight selected bird
+            is_selected = (i == self.selected_bird_index)
+            attr = curses.A_BOLD if is_selected else curses.A_NORMAL
+            color = curses.color_pair(1) if is_selected else curses.color_pair(4)
+            
+            # Draw selection indicator
+            if is_selected:
+                try:
+                    indicator = ">>>"
+                    self.stdscr.addstr(bird_start_y - 1, x - len(indicator) // 2, indicator, color | attr)
+                except:
+                    pass
+            
+            # Draw bird character
+            try:
+                if self.colors_enabled:
+                    self.stdscr.addstr(bird_start_y, x - 1, bird["char"], color | attr)
+                else:
+                    self.stdscr.addstr(bird_start_y, x - 1, bird["char"], attr)
+            except:
+                pass
+            
+            # Draw bird name
+            name_x = x - len(bird["name"]) // 2
+            try:
+                if self.colors_enabled:
+                    self.stdscr.addstr(bird_start_y + 1, name_x, bird["name"], color | attr)
+                else:
+                    self.stdscr.addstr(bird_start_y + 1, name_x, bird["name"], attr)
+            except:
+                pass
+            
+            # Draw difficulty description
+            desc_x = x - len(bird["desc"]) // 2
+            try:
+                if self.colors_enabled:
+                    self.stdscr.addstr(bird_start_y + 2, desc_x, bird["desc"], curses.color_pair(4))
+                else:
+                    self.stdscr.addstr(bird_start_y + 2, desc_x, bird["desc"])
+            except:
+                pass
+        
         # Draw instructions
-        inst_start_y = welcome_y + 3
+        inst_start_y = bird_start_y + 5
         for i, line in enumerate(instructions):
             if inst_start_y + i < self.height - 2:
                 x = center_x - len(line) // 2
@@ -482,8 +462,8 @@ class ClonyBird:
         except:
             pass
         
-        # Only draw game elements if bird is selected, game is started and not over
-        if self.bird_selected and self.game_started and not self.game_over:
+        # Only draw game elements if game is started and not over
+        if self.game_started and not self.game_over:
             # Draw pipes (optimized - draw by lines instead of pixels)
             pipe_line = PIPE_CHAR * PIPE_WIDTH
             pipe_attr = curses.color_pair(2) if self.colors_enabled else 0
@@ -566,10 +546,8 @@ class ClonyBird:
                 pass
             self.level_up_message_time -= 1
         
-        # Draw bird selection, welcome screen, or game over screen
-        if not self.bird_selected:
-            self.draw_bird_selection_screen()
-        elif not self.game_started:
+        # Draw welcome screen or game over screen
+        if not self.game_started:
             self.draw_welcome_screen()
         elif self.game_over:
             self.draw_game_over_screen()
@@ -592,51 +570,49 @@ class ClonyBird:
         self.level_up_message_time = 0
         self.game_over = False
         self.game_started = False
-        self.bird_selected = False  # Reset bird selection
         self.selected_bird_index = 0  # Reset to first bird
-        self.difficulty_multiplier = 1.0  # Reset difficulty
+        self.select_bird(0)  # Reset bird and difficulty
         self.bird_y = self.height // 2
         self.bird_velocity = 0
         self.pipes = []
         self.create_initial_pipes()
-        # Reset bird character to default
-        self.bird_char = self.bird_options[0]["char"]
     
     def handle_input(self):
         """Handle keyboard input"""
         try:
             key = self.stdscr.getch()
             
-            # Bird selection phase
-            if not self.bird_selected:
+            # Quit functionality (works at any time)
+            if key == ord('q') or key == ord('Q') or key == 27:  # ESC or Q
+                return False
+            
+            # Welcome screen controls (bird selection and start)
+            if not self.game_started:
+                # Bird selection on welcome screen
                 if key == curses.KEY_LEFT or key == ord('a') or key == ord('A'):
                     # Move selection left
                     self.selected_bird_index = (self.selected_bird_index - 1) % len(self.bird_options)
+                    self.select_bird(self.selected_bird_index)
                 elif key == curses.KEY_RIGHT or key == ord('d') or key == ord('D'):
                     # Move selection right
                     self.selected_bird_index = (self.selected_bird_index + 1) % len(self.bird_options)
+                    self.select_bird(self.selected_bird_index)
                 elif key == ord('1'):
                     self.select_bird(0)
                 elif key == ord('2'):
                     self.select_bird(1)
                 elif key == ord('3'):
                     self.select_bird(2)
-                elif key == ord(' ') or key == ord('\n') or key == ord('\r'):  # SPACE or ENTER
-                    # Confirm selection
-                    self.select_bird(self.selected_bird_index)
-            # Quit functionality (works at any time)
-            if key == ord('q') or key == ord('Q') or key == 27:  # ESC or Q
-                return False
-            
-            # Game controls (only after bird is selected)
-            if key == ord(' ') or key == ord('w') or key == ord('W'):
-                if not self.game_started:
+                # Start game
+                elif key == ord(' ') or key == ord('w') or key == ord('W') or key == ord('\n') or key == ord('\r'):
                     self.start_game()
-                else:
+            # Game controls (during gameplay)
+            else:
+                if key == ord(' ') or key == ord('w') or key == ord('W'):
                     self.jump()
-            elif key == ord('r') or key == ord('R'):
-                if self.game_over:
-                    self.restart()
+                elif key == ord('r') or key == ord('R'):
+                    if self.game_over:
+                        self.restart()
         except:
             pass
         
@@ -648,8 +624,8 @@ class ClonyBird:
             if not self.handle_input():
                 break
             
-            # Only update game logic if bird is selected
-            if self.bird_selected:
+            # Only update game logic if game is started
+            if self.game_started:
                 self.update_bird()
                 self.update_pipes()
             
