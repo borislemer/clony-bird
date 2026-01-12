@@ -310,14 +310,20 @@ class ClonyBird:
         center_y = self.height // 2
         center_x = self.width // 2
         
-        # ASCII art for "CLONY BIRD" - properly generated
-        # Changed from "CLONE" to "CLONY" by replacing E with Y
+        # ASCII art for "CLONY BIRD" - provided by user
         title_lines = [
-            "  ____ _                    ____  _     _ _ ",
-            " / ___| | ___  _ __   ___  | __ )(_) __| | |",
-            "| |   | |/ _ \\| '_ \\ / _ \\ |  _ \\| |/ _` | |",
-            "| |___| | (_) | | | |  __/ | |_) | | (_| |_|",
-            " \\____|_|\\__  /|_| |_|\\___| |____/|_|\\__,_(_)",
+            "  ______   __                                      _______   __                  __ ",
+            " /      \\ /  |                                    /       \\ /  |                /  |",
+            "/$$$$$$  |$$ |  ______   _______   __    __       $$$$$$$  |$$/   ______    ____$$ |",
+            "$$ |  $$/ $$ | /      \\ /       \\ /  |  /  |      $$ |__$$ |/  | /      \\  /    $$ |",
+            "$$ |      $$ |/$$$$$$  |$$$$$$$  |$$ |  $$ |      $$    $$< $$ |/$$$$$$  |/$$$$$$$ |",
+            "$$ |   __ $$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |      $$$$$$$  |$$ |$$ |  $$/ $$ |  $$ |",
+            "$$ \\__/  |$$ |$$ \\__$$ |$$ |  $$ |$$ \\__$$ |      $$ |__$$ |$$ |$$ |      $$ \\__$$ |",
+            "$$    $$/ $$ |$$    $$/ $$ |  $$ |$$    $$ |      $$    $$/ $$ |$$ |      $$    $$ |",
+            " $$$$$$/  $$/  $$$$$$/  $$/   $$/  $$$$$$$ |      $$$$$$$/  $$/ $$/        $$$$$$$/ ",
+            "                                  /  \\__$$ |                                        ",
+            "                                  $$    $$/                                         ",
+            "                                   $$$$$$/                                          ",
         ]
         
         # Find the longest line for proper centering
@@ -341,17 +347,20 @@ class ClonyBird:
         ]
         
         # Draw title - center based on longest line
-        start_y = max(2, center_y - 8)
+        # Adjust start position for taller ASCII art (12 lines)
+        start_y = max(1, center_y - 10)
         for i, line in enumerate(title_lines):
             if start_y + i < self.height - 1:
-                # Center based on max line length, then adjust for actual line
+                # Center based on max line length
                 x = center_x - max_line_length // 2
-                if x >= 0 and x + len(line) < self.width:
+                # Trim line if it's too wide for the terminal
+                display_line = line[:self.width - x] if x + len(line) > self.width else line
+                if x >= 0 and x + len(display_line) <= self.width:
                     try:
                         if self.colors_enabled:
-                            self.stdscr.addstr(start_y + i, x, line, curses.color_pair(1) | curses.A_BOLD)
+                            self.stdscr.addstr(start_y + i, x, display_line, curses.color_pair(1) | curses.A_BOLD)
                         else:
-                            self.stdscr.addstr(start_y + i, x, line, curses.A_BOLD)
+                            self.stdscr.addstr(start_y + i, x, display_line, curses.A_BOLD)
                     except:
                         pass
         
